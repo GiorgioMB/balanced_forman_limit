@@ -1,9 +1,7 @@
 # Balanced Forman curvature on random geometric graphs: reproduction code
 
 This repository reproduces every number, table and figure of the paper *Balanced Forman Curvature and
-Neighbourhood-Overlap Statistics on Random Geometric Graphs* (G. Micaletto, M. E. Massari, D. Elmas) and of
-its supplementary material. All BF curvatures are computed exactly from Definition 2.1; nothing is sampled
-or approximated.
+Neighbourhood-Overlap Statistics on Random Geometric Graphs* and of its supplementary material. 
 
 ## Requirements
 
