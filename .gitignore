@@ -1,8 +1,5 @@
-env/
 __pycache__/
 *.egg-info/
-c/d2c
-c/fullgraph
-c/fullvar
-*.pdf
-*.toml
+build/
+results/
+.venv/

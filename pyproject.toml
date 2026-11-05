@@ -1,0 +1,14 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bflib"
+version = "1.0.0"
+description = "Reproduction code for 'Balanced Forman Curvature and Neighbourhood-Overlap Statistics on Random Geometric Graphs'"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = ["numpy>=1.22", "scipy>=1.8", "matplotlib>=3.5"]
+
+[tool.setuptools]
+packages = ["bflib", "bflib.experiments"]
