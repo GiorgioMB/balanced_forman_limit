@@ -7,7 +7,7 @@
    F(P+x+y) - F(P+x) - F(P+y) + F(P) of the sum of BF curvatures over the edges that can change
    (those with an endpoint within 1 + eps of x), split into the 4-cycle part S and the max/min part
    J = -|tri| |1/d_i - 1/d_j| / 2.  The edge {x,y} itself, whose centred term has mean zero, is
-   omitted (Section S8, Table S7). */
+   omitted (Section S8, Table S6). */
 #include <math.h>
 #include <stdint.h>
 #include <stdio.h>

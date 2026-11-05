@@ -4,7 +4,7 @@ the maximal-deviation statement after Theorem 3.1)."""
 import numpy as np
 from scipy.optimize import brentq
 
-from ..pipeline import Task, bfgraph_edges, figure_style, run_tasks
+from ..pipeline import Task, bfgraph_edges, figure_style, plain_log_ticks, run_tasks
 from ..theory import Psi, f_lens, omega
 
 NAME = "alledges"
@@ -61,12 +61,13 @@ def _figure(ctx, rows):
     for panel, d in enumerate((2, 3)):
         largest = max((r for r in rows if r["d"] == d), key=lambda r: r["lam"])
         bf = np.load(_path(ctx, d, largest["n"], largest["lam"], largest["seed"]))[:, 1].astype(float)
-        ax[panel].hist(bf, bins=60, density=True, color="0.8", edgecolor="0.55", lw=0.3,
-                       label=f"all $|E|={len(bf):,}$ edges")
+        heights = ax[panel].hist(bf, bins=60, density=True, color="0.8", edgecolor="0.55", lw=0.3,
+                                 label=f"all $|E|={len(bf):,}$ edges")[0]
         y = np.linspace(float(Psi(d, 1.0)) + 1e-6, 1 - 1e-6, 300)
         tau = np.array([brentq(lambda s: float(Psi(d, s)) - v, 0, 1) for v in y])
         density = d * omega(d) / omega(d - 1) / 3 * tau ** (d - 1) * (1 - tau**2 / 4) ** (-(d - 1) / 2)
         ax[panel].plot(y, density, "k", lw=1.1, label=r"$\varphi_\infty$")
+        ax[panel].set_ylim(0, 1.4 * max(heights.max(), density.max()))  # room for the legend above the data
         ax[panel].set_title(f"$d={d}$, $n={largest['n']}$, $\\lambda={largest['lam']}$", fontsize=9)
         ax[panel].set_xlabel("BF curvature")
         ax[panel].legend(frameon=False, loc="upper right", fontsize=7)
@@ -76,13 +77,19 @@ def _figure(ctx, rows):
         for key, colour in [("maxdev", "C3"), ("meandev", "C0"), ("W1", "C2")]:
             ax[2].loglog(lams, [r[key] for r in sub], marker + "-", color=colour, ms=3, lw=0.7,
                          mfc="none" if d == 3 else colour)
-    lam_line = np.array([25, 400])
+    from matplotlib.lines import Line2D
+
+    all_lams = sorted({r["lam"] for r in rows})
+    lam_line = np.array([all_lams[0], all_lams[-1]])
     n_ref = max(r["n"] for r in rows if r["d"] == 2)
     ax[2].loglog(lam_line, 1.9 * np.sqrt(np.log(n_ref) / lam_line), "k--", lw=0.7)
     ax[2].loglog(lam_line, 1.0 / np.sqrt(lam_line), "k:", lw=0.7)
-    ax[2].text(140, 0.75, r"$\max_e|\mathrm{BF}-\Psi|$", color="C3", fontsize=7)
-    ax[2].text(26, 0.062, r"mean$_e|\mathrm{BF}-\Psi|$", color="C0", fontsize=7)
-    ax[2].text(26, 0.0075, r"$W_1(\mu_n,\mu_\infty)$", color="C2", fontsize=7)
+    plain_log_ticks(ax[2].xaxis, all_lams)
+    ax[2].set_xlim(all_lams[0] / 1.3, all_lams[-1] * 1.3)
+    handles = [Line2D([], [], color=c, marker="o", ms=3, lw=0.7, label=label)
+               for c, label in [("C3", r"$\max_e|\mathrm{BF}-\Psi|$"), ("C0", r"$\mathrm{mean}_e|\mathrm{BF}-\Psi|$"),
+                                ("C2", r"$W_1(\mu_n,\mu_\infty)$")]]
+    ax[2].legend(handles=handles, loc="lower left", frameon=False, fontsize=6.5, handlelength=1.4)
     ax[2].set_xlabel(r"$\lambda$")
     ax[2].set_title(r"dashed: $1.9\sqrt{\log n/\lambda}$; dotted: $\lambda^{-1/2}$", fontsize=7.5)
     fig.tight_layout(pad=0.3, w_pad=0.5)

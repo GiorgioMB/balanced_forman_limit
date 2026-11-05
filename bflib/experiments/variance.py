@@ -65,7 +65,6 @@ def analyse(ctx):
              + " (Proposition 7.5: tends to sigma_2^2, about 6.7e-4).")
     ctx.note("- Var F_n^sym / (n lambda): " + ", ".join(f"{r['Fsym']:.3f}" for r in rows) + ".")
     ctx.note(f"- Largest radius {max(r['r'] for r in rows):.3f} (must be < 1/8).")
-    ctx.write_table("tableS5", "Table S5 body", [
-        f"{r['lam']} & {r['n0']:,} & {r['r']:.3f} & {r['graphs']:,} & {r['F']:.3f}\\,$\\pm$\\,{r['F_se']:.3f} & "
-        f"{1e4 * r['FK']:.2f}\\,$\\pm$\\,{1e4 * r['FK_se']:.2f} & {r['Fsym']:.3f}\\,$\\pm$\\,{r['Fsym_se']:.3f} \\\\"
-        .replace(",", "{,}") for r in rows])
+    ctx.write_table("tableS5", "Table S5 body (F^K column in units of 1e-4)", [
+        f"{r['lam']} & {r['n0']} & {r['r']:.3f} & {r['graphs']} & ${r['F']:.3f}\\pm{r['F_se']:.3f}$ & "
+        f"${1e4 * r['FK']:.2f}\\pm{1e4 * r['FK_se']:.2f}$ & ${r['Fsym']:.3f}\\pm{r['Fsym_se']:.3f}$\\\\" for r in rows])

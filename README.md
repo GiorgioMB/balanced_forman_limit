@@ -54,8 +54,8 @@ Results are written to `results/<scale>/`:
 | Section S6, Figure S4(b) | `python reproduce.py S6` | `REPORT.md` |
 | Section S7, Table S4, Figure S4(c) | `python reproduce.py tableS4` | `tables/tableS4.tex` |
 | Figure S4 | `python reproduce.py figS4` | `figures/fig_more.pdf` |
-| Section S8, Tables S5 and S7, Remark 7.10 | `python reproduce.py S8` | `tables/tableS5.tex`, `tables/tableS7.tex` |
-| Section S9, Table S6, Proposition 5.8 | `python reproduce.py tableS6` | `tables/tableS6.tex` |
+| Section S8, Tables S5 and S6, Remark 7.10 | `python reproduce.py S8` | `tables/tableS5.tex`, `tables/tableS6.tex` |
+| Section S9, Table S7, Proposition 5.8 | `python reproduce.py tableS7` | `tables/tableS7.tex` |
 
 ## Cost
 

@@ -12,7 +12,7 @@ ALIASES = {
     "table3": ["clustering"], "table4": ["sphere_global"],
     "figS1": ["flat"], "figS2": ["alledges"], "figS3": ["vertex"], "figS4": ["figure_s4"],
     "tableS1": ["flat"], "tableS2": ["alledges"], "tableS3": ["lens"], "tableS4": ["pairs"],
-    "tableS5": ["variance"], "tableS6": ["density"], "tableS7": ["kernel"],
+    "tableS5": ["variance"], "tableS6": ["kernel"], "tableS7": ["density"],
     "sec8.2": ["flat", "alledges"], "sec8.3": ["curved"], "sec8.4": ["clustering", "sphere_global"],
     "S1": ["lens", "clustering"], "S2": ["fourcycle", "flat"], "S3": ["alledges"], "S4": ["lens"], "S5": ["vertex"],
     "S6": ["degree"], "S7": ["pairs"], "S8": ["variance", "kernel"], "S9": ["density"],

@@ -48,5 +48,4 @@ def analyse(ctx):
     ctx.note("- Correlations " + ", ".join(f"{r['corr']:+.3f}" for r in rows) + f" for angles {ANGLES} degrees; "
              f"standardised differences from the exact limit in [{min(z):.1f}, {max(z):.1f}].")
     ctx.write_table("tableS4", "Table S4 body", [
-        f"${r['theta']}^\\circ$ & {r['pairs']:,} & ${r['corr']:+.3f}\\pm{r['se']:.3f}$ & ${r['limit']:+.3f}$ \\\\"
-        .replace(",", "{,}") for r in rows])
+        f"{r['theta']} & {r['pairs']} & ${r['corr']:+.3f}\\pm{r['se']:.3f}$ & ${r['limit']:+.3f}$ \\\\" for r in rows])

@@ -27,6 +27,7 @@ def analyse(ctx):
     for pos, row in enumerate(selected):
         ax[0].errorbar(pos, row["chi_hat"], yerr=2 * row["chi_se"], fmt="o", color="C0", capsize=2)
         ax[0].plot(pos, row["chi"], "kx", ms=7)
+    ax[0].set_xlim(-0.5, len(selected) - 0.5)
     ax[0].set_xticks(range(len(selected)))
     ax[0].set_xticklabels([labels[row["surface"]] for row in selected])
     ax[0].set_ylabel(r"$\hat\chi$")

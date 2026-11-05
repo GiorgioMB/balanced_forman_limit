@@ -5,7 +5,7 @@ import zlib
 
 import numpy as np
 
-from ..pipeline import Task, figure_style, run_tasks
+from ..pipeline import Task, figure_style, plain_log_ticks, run_tasks
 from ..theory import Psi, kappa
 from ..vertex import adjacency, bf_vertex_edges, sample_local
 
@@ -156,11 +156,15 @@ def analyse(ctx):
 def _figure(ctx, summary):
     plt = figure_style()
     fig, ax = plt.subplots(1, 3, figsize=(7.0, 2.3))
+    top = 0.0
     for key, colour, label in [("S2_l2000_r0.5", "C3", "$S^2$ (Scal $=2$)"), ("H2_l2000_r0.5", "C0", "$H^2$ (Scal $=-2$)"),
                                ("S3_l600_r0.6", "C1", "$S^3$ (Scal $=6$)")]:
-        ax[0].hist(summary[key]["estimates"], bins=30, histtype="step", color=colour, density=True, label=label)
+        heights = ax[0].hist(summary[key]["estimates"], bins=30, histtype="step", color=colour, density=True,
+                             label=label)[0]
+        top = max(top, heights.max())
+    ax[0].set_ylim(0, 1.45 * top)  # room for the legend above the histograms
     ax[0].set_xlabel(r"$\widehat{\mathrm{Scal}}_i$")
-    ax[0].legend(frameon=False, fontsize=6.5)
+    ax[0].legend(frameon=False, fontsize=6.5, loc="upper right")
     ax[0].set_title("(a) per-vertex estimates", fontsize=8.5)
     circles = np.array(sorted((s["lam_r4"], s["rmse"]) for k, s in summary.items() if k.startswith("S2_l")))
     ax[1].loglog(circles[:, 0], circles[:, 1], "o", color="C3", ms=4)
@@ -168,7 +172,8 @@ def _figure(ctx, summary):
         ax[1].loglog(summary[key]["lam_r4"], summary[key]["rmse"], "s", color=colour, ms=4)
     x = np.array([3, 150])
     ax[1].loglog(x, 11 * x**-0.5, "k--", lw=0.7)
-    ax[1].set(xlabel=r"$\lambda r^4$", ylabel="RMSE")
+    ax[1].set(xlabel=r"$\lambda r^4$", ylabel="RMSE", ylim=(0.8, 8))
+    plain_log_ticks(ax[1].yaxis, [1, 2, 3, 4, 6])
     ax[1].set_title(r"(b) error $\propto(\lambda r^4)^{-1/2}$", fontsize=8.5)
     fit = summary["ricci_S2xR_l600_r0.6"]
     entries = [(0, 0), (1, 1), (2, 2), (0, 1), (0, 2), (1, 2)]

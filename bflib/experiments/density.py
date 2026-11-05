@@ -1,5 +1,5 @@
 """Planted edges under the density varpi(x) = 1 + a cos(2 pi x_1) on T^2 (Proposition 5.8; Section S9,
-Table S6).
+Table S7).
 
 The edge is centred at x_1 = 1/4, where |grad log varpi| is largest, and points along the gradient. Its
 mean curvature is centred by the flat Palm mean at the local expected degree lambda_varpi = lambda
@@ -16,7 +16,7 @@ from ..theory import density_correction
 
 NAME = "density"
 TITLE = "Non-uniform sampling"
-ITEMS = ["Section S9", "Table S6", "Proposition 5.8 (numerical observation)"]
+ITEMS = ["Section S9", "Table S7", "Proposition 5.8 (numerical observation)"]
 REQUIRES = []
 
 LAM, AMPLITUDE = 2000, 0.5
@@ -81,7 +81,6 @@ def analyse(ctx):
         ctx.note(f"- r = {row['r']}, t = {row['t']}: centred mean {row['bf']:+.5f} +- {row['bf_se']:.5f}, prediction "
                  f"{row['prediction']:+.5f} (relative deviation {100 * row['relative_deviation']:+.0f}%); BF^sym "
                  f"{row['bf_sym']:+.5f} +- {row['bf_sym_se']:.5f}.")
-    ctx.write_table("tableS6", "Table S6 body", [
-        f"{row['r']:.2f} & {row['lam']:,} & {row['t']:.2f} & ${row['bf']:+.5f}\\pm{row['bf_se']:.5f}$ & "
-        f"${row['prediction']:+.5f}$ & ${row['bf_sym']:+.5f}\\pm{row['bf_sym_se']:.5f}$ \\\\".replace(",", "{,}")
-        for row in rows])
+    ctx.write_table("tableS7", "Table S7 body", [
+        f"{row['r']:.2f} & {row['lam']} & {row['t']:.2f} & ${row['bf']:+.5f}\\pm{row['bf_se']:.5f}$ & "
+        f"${row['prediction']:+.5f}$ & ${row['bf_sym']:+.5f}\\pm{row['bf_sym_se']:.5f}$\\\\" for row in rows])

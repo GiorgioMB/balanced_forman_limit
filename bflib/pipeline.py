@@ -32,6 +32,10 @@ class Context:
         self.root = Path(self.root)
         for sub in ("raw", "summaries", "tables", "figures"):
             (self.root / sub).mkdir(parents=True, exist_ok=True)
+        # results are never version-controlled, wherever --results points
+        ignore = self.root.parent / ".gitignore"
+        if not ignore.exists():
+            ignore.write_text("# written by reproduce.py: results are not version-controlled\n*\n")
 
     @property
     def paper(self):
@@ -197,6 +201,16 @@ def figure_style():
         "lines.linewidth": 1.0,
     })
     return plt
+
+
+def plain_log_ticks(axis, values):
+    """Ticks at the given values of a logarithmic axis, labelled plainly; minor ticks are not labelled
+    (matplotlib labels them when an axis spans less than a decade, and the labels then overlap)."""
+    from matplotlib.ticker import FixedFormatter, FixedLocator, NullFormatter
+
+    axis.set_major_locator(FixedLocator(values))
+    axis.set_major_formatter(FixedFormatter([f"{v:g}" for v in values]))
+    axis.set_minor_formatter(NullFormatter())
 
 
 def fmt_pm(value, se, digits=5):

@@ -1,5 +1,5 @@
 """Second-order kernel E D^2_{x,y} F at dist(x,y) = 0.05 r, and the second-chaos part of Var F_n from the
-kernel on a grid of distances in [0, 3r] (Section S8, Table S7)."""
+kernel on a grid of distances in [0, 3r] (Section S8, Table S6)."""
 
 import zlib
 
@@ -9,7 +9,7 @@ from ..pipeline import Task, kernel_samples, run_tasks
 
 NAME = "kernel"
 TITLE = "Second-order kernel of the sum of BF curvatures"
-ITEMS = ["Section S8 (kernel)", "Table S7"]
+ITEMS = ["Section S8 (kernel)", "Table S6"]
 REQUIRES = ["variance"]  # the second-chaos parts are compared with the variances of Table S5
 
 EPS = 0.05
@@ -80,7 +80,7 @@ def analyse(ctx):
         share = f", {100 * c['share']:.0f}% of Var F_n" if c["share"] is not None else ""
         ctx.note(f"- lambda = {c['lam']}: second-chaos part {c['total']:.3f} n lambda{share}; max/min part alone "
                  f"{c['J']:.3f} n lambda = {1e4 * c['J_over_lam']:.1f}e-4 n lambda^2.")
-    ctx.write_table("tableS7", "Table S7 body", [
-        f"{r['lam']} & {r['samples']:,} & ${r['J']:+.3f}\\pm{r['J_se']:.3f}$ & ${r['J_over_sqrt']:+.4f}$ & "
-        f"${r['S']:+.3f}\\pm{r['S_se']:.3f}$ & ${r['rest']:+.3f}\\pm{r['rest_se']:.3f}$ & "
-        f"${r['total']:+.3f}\\pm{r['total_se']:.3f}$ \\\\".replace(",", "{,}") for r in rows])
+    ctx.write_table("tableS6", "Table S6 body", [
+        f"{r['lam']} & {r['samples']} & ${r['J']:+.3f}\\pm{r['J_se']:.3f}$ & ${r['J_over_sqrt']:+.3f}$ & "
+        f"${r['S']:+.3f}\\pm{r['S_se']:.3f}$ & ${r['rest']:.3f}\\pm{r['rest_se']:.3f}$ & "
+        f"${r['total']:.3f}\\pm{r['total_se']:.3f}$\\\\" for r in rows])

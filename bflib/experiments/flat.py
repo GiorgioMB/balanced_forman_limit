@@ -93,7 +93,7 @@ def _figures(ctx, summary, lams):
     lam_arr = np.array(lams)
 
     # Figure 1: rate, variance, bias
-    fig, ax = plt.subplots(1, 3, figsize=(7.0, 2.35))
+    fig, ax = plt.subplots(1, 3, figsize=(7.0, 2.6))
     for d, marker, ls in [(2, "o", "-"), (3, "s", "--")]:
         for t in T_VALUES:
             entry = summary[f"{d}_{t}"]
@@ -118,9 +118,9 @@ def _figures(ctx, summary, lams):
     handles = [Line2D([], [], color=colours[t], marker="o", ls="", ms=3, label=f"$t={t}$") for t in T_VALUES]
     handles += [Line2D([], [], color="gray", marker="o", ls="-", ms=3, label="$d=2$"),
                 Line2D([], [], color="gray", marker="s", mfc="none", ls="--", ms=3, label="$d=3$")]
-    ax[0].legend(handles=handles, loc="upper right", frameon=False, ncol=2, handlelength=1.2, columnspacing=0.6)
+    fig.legend(handles=handles, loc="lower center", ncol=6, frameon=False, handlelength=1.6, columnspacing=1.4)
     _no_minor_labels(ax)
-    fig.tight_layout(pad=0.3, w_pad=0.6)
+    fig.tight_layout(pad=0.3, w_pad=0.6, rect=(0, 0.08, 1, 1))
     fig.savefig(ctx.figure("fig_rate.pdf"))
     plt.close(fig)
 
@@ -132,13 +132,13 @@ def _figures(ctx, summary, lams):
         w = np.concatenate([np.sqrt(lam) * (load(ctx, d, lam, t)[:, 0] - Psi(d, t) - (4 - 3 * f) / lam
                                             - load(ctx, d, lam, t)[:, 1]) for lam in pool])
         ax[panel].hist(w, bins=45, density=True, color="0.82", edgecolor="0.55", lw=0.35,
-                       label=f"simulation ($N={len(w)}$)")
+                       label="simulation")  # N is given in the caption
         grid = np.linspace(-5, 5, 400)
         ax[panel].plot(grid, skew_normal_pdf(grid, f), "k", lw=1.1, label="skew-normal limit $W$")
         ax[panel].plot(grid, np.exp(-grid**2 / (2 * W_var(f))) / np.sqrt(2 * np.pi * W_var(f)), "k:", lw=0.8,
                        label=r"$N(0,\mathrm{Var}\,W)$")
         ax[panel].axvline(W_mean(f), color="k", lw=0.5, ls="--")
-        ax[panel].set(xlim=(-5, 5), ylim=(0, 0.48))
+        ax[panel].set(xlim=(-5, 5), ylim=(0, 0.56))  # room for the legend
         ax[panel].set_title(f"$d={d}$, $t={t}$, $\\lambda\\in\\{{{','.join(map(str, pool))}\\}}$", fontsize=8.5)
         ax[panel].set_xlabel(r"$\sqrt{\lambda}\,(\mathrm{BF}-\Psi_d(t)-\mathcal{S}-(4-3f_d)/\lambda)$")
     ax[0].legend(frameon=False, loc="upper left", fontsize=6.5)
@@ -177,8 +177,8 @@ def write_table_s1(ctx):
                 u, v = ("$1/3$", "$1/6$") if t == 1.0 else (f"{c['u']:.5f}", f"{c['v']:.5f}")
                 rows.append(f"{d} & {t:.2f} & {u} & {v} & 4 & {es[lo]:.2f} & {es[hi]:.2f} \\\\")
             else:
-                rows.append(f"{d} & {t:.2f} & {c['u']:.4f}\\,$\\pm$\\,{c['u_se']:.4f} & {c['v']:.4f}\\,$\\pm$\\,"
-                            f"{c['v_se']:.4f} & {c['c']:.2f}\\,$\\pm$\\,{c['c_se']:.2f} & {es[lo]:.2f} & {es[hi]:.2f} \\\\")
+                rows.append(f"{d} & {t:.2f} & ${c['u']:.4f}\\pm{c['u_se']:.4f}$ & ${c['v']:.4f}\\pm{c['v_se']:.4f}$ & "
+                            f"${c['c']:.2f}\\pm{c['c_se']:.2f}$ & {es[lo]:.2f} & {es[hi]:.2f} \\\\")
         if d == 2:
             rows.append("\\addlinespace[2pt]")
     ctx.write_table("tableS1", f"Table S1 body; simulated columns at lambda = {lo} and {hi}", rows)
