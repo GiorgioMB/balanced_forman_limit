@@ -122,7 +122,9 @@ def _figure(ctx, curved):
         ax.plot([r["t"] for r in sub], [r["exact"] for r in sub], "x", color="k", ms=3.5, mew=0.7)
     ax.axhline(0, color="k", lw=0.5)
     ax.set(xlabel=r"$t$", ylabel=r"$\mathrm{E\,BF}_{M}-\mathrm{E\,BF}_{\mathrm{flat}}$")
-    ax.legend(frameon=False, fontsize=6.6, loc="upper left")
+    lo, hi = ax.get_ylim()
+    ax.set_ylim(lo, hi + 0.42 * (hi - lo))  # a band above the curves for the legend
+    ax.legend(frameon=False, fontsize=6.6, loc="upper left", ncol=2, columnspacing=1.0)
     ax.set_title(r"$r=0.5$, $\lambda=1500$; lines: $3\kappa_d(t)\rho\,r^2$; $\times$: exact lens", fontsize=8)
     fig.tight_layout(pad=0.3)
     fig.savefig(ctx.figure("fig_curved.pdf"))
