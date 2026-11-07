@@ -2,7 +2,7 @@
 """Single entry point: reproduces every number, table and figure of the paper and its supplement.
 
     python reproduce.py --list                         what can be reproduced, and how long it takes
-    python reproduce.py selftest                       check the implementations against Definition 2.1
+    python reproduce.py selftest                       check the implementations against Definition 2.2
     python reproduce.py all --scale smoke              every experiment at reduced size (minutes)
     python reproduce.py all --scale paper --jobs 16    every experiment at the size reported in the paper
     python reproduce.py fig1 table4 tableS5            selected manuscript items (dependencies included)

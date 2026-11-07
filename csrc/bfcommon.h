@@ -58,7 +58,7 @@ static long poisson(double mu) {
     return k + poisson_small(mu);
 }
 
-/* f_2(t): area of the intersection of two unit discs at distance t, divided by pi (Lemma 2.2) */
+/* f_2(t): area of the intersection of two unit discs at distance t, divided by pi (Lemma 2.4) */
 static inline double f2_lens(double t) {
     return (2.0 / M_PI) * (acos(t / 2) - (t / 2) * sqrt(1 - t * t / 4));
 }

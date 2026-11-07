@@ -17,7 +17,7 @@ from .theory import omega
 
 
 def bf_from_counts(n_p, n_q, n_L, cnt_k, cnt_w):
-    """BF curvature of a planted edge from its local counts (Definition 2.1).
+    """BF curvature of a planted edge from its local counts (Definition 2.2).
 
     n_p, n_q: Poisson points in B(p,r) and B(q,r) (the planted points excluded); n_L: points in the
     lens; cnt_k[k]: neighbours in U_q of the point k of U_p; cnt_w[w]: neighbours in U_p of w in U_q.

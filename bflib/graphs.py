@@ -17,7 +17,7 @@ def csr_from_pairs(pairs, n):
 
 
 def bf_edges(A, edges):
-    """Exact BF curvature (Definition 2.1) of the given edges of a graph with symmetric CSR
+    """Exact BF curvature (Definition 2.2) of the given edges of a graph with symmetric CSR
     adjacency A. Returns an array of rows (BF, S)."""
     indptr, indices = A.indptr, A.indices
     n = A.shape[0]

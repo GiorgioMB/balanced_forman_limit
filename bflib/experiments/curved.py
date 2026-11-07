@@ -88,7 +88,7 @@ def analyse(ctx):
              f"{100 * rel.mean():.1f}% (paper: 4.7%, 1.6%).")
     flat_line = [r["z_flat"] for r in curved if r["geometry"] == "S2xR_R"]
     ctx.note(f"- S^2 x R along the line: {min(flat_line):.1f} to {max(flat_line):.1f} standard errors from the flat "
-             "reference (paper: 19.6 to 22.4).")
+             "reference (paper: 19.6 to 22.2).")
     offsets = [abs(r["offset"]) for r in rows if r["geometry"].startswith("flat")]
     ctx.note(f"- Flat references differ from Psi_d(t) by up to {max(offsets):.1e} (paper: 2.2e-3).")
 

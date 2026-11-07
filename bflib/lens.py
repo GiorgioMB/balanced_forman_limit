@@ -105,5 +105,5 @@ def clustering_probability(surface, r):
 
 
 def flat_clustering(d):
-    """The flat value 3 f_d(1) / 2 (Lemma 3.7)."""
+    """The flat value 3 f_d(1) / 2 (Lemma S11.1)."""
     return 1.5 * float(f_lens(d, 1.0))

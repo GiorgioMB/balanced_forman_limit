@@ -1,4 +1,4 @@
-"""Correlation of BF curvature on two edges sharing a vertex (Theorem B.3; Section S7, Table S4,
+"""Correlation of BF curvature on two edges sharing a vertex (Theorem S10.3; Section S7, Table S4,
 Figure S4(c))."""
 
 import numpy as np

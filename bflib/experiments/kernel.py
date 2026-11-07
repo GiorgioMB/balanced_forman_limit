@@ -75,11 +75,14 @@ def analyse(ctx):
     ctx.save_summary(NAME, dict(kernel=rows, chaos=chaos_rows))
     ratios = [r["J_over_sqrt"] for r in rows]
     ctx.note("- Max/min part / sqrt(lambda): " + ", ".join(f"{x:.4f}" for x in ratios)
-             + " (paper: -0.076 to -0.093, heuristic limit about -0.0993).")
+             + " (Section S8 and Table S6: from -0.075 at lambda = 20 to -0.088 at lambda = 160, towards -b_2, "
+               "about -0.0994).")
     for c in chaos_rows:
         share = f", {100 * c['share']:.0f}% of Var F_n" if c["share"] is not None else ""
         ctx.note(f"- lambda = {c['lam']}: second-chaos part {c['total']:.3f} n lambda{share}; max/min part alone "
                  f"{c['J']:.3f} n lambda = {1e4 * c['J_over_lam']:.1f}e-4 n lambda^2.")
+    ctx.note("  (Section S8: second-chaos parts 0.18 and 0.19 n lambda, 55% and 73% of Var F_n; max/min part alone "
+             "0.0086 and 0.049 n lambda, that is 4.3 and 6.1e-4 n lambda^2.)")
     ctx.write_table("tableS6", "Table S6 body", [
         f"{r['lam']} & {r['samples']} & ${r['J']:+.3f}\\pm{r['J_se']:.3f}$ & ${r['J_over_sqrt']:+.3f}$ & "
         f"${r['S']:+.3f}\\pm{r['S_se']:.3f}$ & ${r['rest']:.3f}\\pm{r['rest_se']:.3f}$ & "

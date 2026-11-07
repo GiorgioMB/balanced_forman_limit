@@ -18,7 +18,7 @@ Everything runs through `reproduce.py`:
 
 ```
 python reproduce.py --list                         # what can be reproduced, and the cost of each part
-python reproduce.py selftest                       # all implementations against Definition 2.1 (seconds)
+python reproduce.py selftest                       # all implementations against Definition 2.2 (seconds)
 python reproduce.py all --scale smoke              # every experiment at reduced size (minutes)
 python reproduce.py all --scale paper --jobs 16    # every experiment at the size reported in the paper
 python reproduce.py table2 fig3                    # selected items; dependencies are run automatically
@@ -42,7 +42,7 @@ Results are written to `results/<scale>/`:
 
 | Item | Command | Output |
 |---|---|---|
-| Table 1 (thresholds), Remark 3.7(c), constants of Sections 3.4 and 7.1 | `python reproduce.py table1` | `REPORT.md`, `tables/remark37.tex` |
+| Table 1 (thresholds), windows of Theorem 7.14, Remark 3.7(c), constants of Sections 3.3 and 7 | `python reproduce.py table1` | `REPORT.md`, `tables/table1.tex`, `tables/remark37.tex` |
 | Section 8.2, Figures 1 and 2 | `python reproduce.py fig1` | `figures/fig_rate.pdf`, `figures/fig_clt.pdf` |
 | Section 8.3, Table 2, Figure 3 | `python reproduce.py table2` | `tables/table2.tex`, `figures/fig_curved.pdf` |
 | Section 8.4, Table 3 (mean clustering) | `python reproduce.py table3` | `tables/table3.tex` |
@@ -54,7 +54,7 @@ Results are written to `results/<scale>/`:
 | Section S6, Figure S4(b) | `python reproduce.py S6` | `REPORT.md` |
 | Section S7, Table S4, Figure S4(c) | `python reproduce.py tableS4` | `tables/tableS4.tex` |
 | Figure S4 | `python reproduce.py figS4` | `figures/fig_more.pdf` |
-| Section S8, Tables S5 and S6, Remark 7.10 | `python reproduce.py S8` | `tables/tableS5.tex`, `tables/tableS6.tex` |
+| Section S8, Tables S5 and S6, Remark 7.10, the variance paragraph of Section 8.4 | `python reproduce.py S8` | `tables/tableS5.tex`, `tables/tableS6.tex` |
 | Section S9, Table S7, Proposition 5.8 | `python reproduce.py tableS7` | `tables/tableS7.tex` |
 
 ## Cost
@@ -75,7 +75,7 @@ bflib/bolza.py          the Bolza surface (Section S1)
 bflib/lens.py           exact lens volumes and clustering probabilities by quadrature
 bflib/fourcycle.py      the constants u_d, vbar_d, c_d of the 4-cycle term
 bflib/experiments/      one module per experiment; each lists the manuscript items it produces
-bflib/selftest.py       the implementations against a literal implementation of Definition 2.1
+bflib/selftest.py       the implementations against a literal implementation of Definition 2.2
 bflib/pipeline.py       cached parallel tasks, the C programs, output helpers
 csrc/bfgraph.c          BF curvature on all edges of graphs on T^2, T^3 and S^2
 csrc/kernel.c           the second-order kernel of Section S8
@@ -86,4 +86,4 @@ csrc/kernel.c           the second-order kernel of Section S8
 Every task has a fixed seed, so a run regenerates the same numbers. The planted-edge samplers draw their
 random numbers in a fixed order; the C programs use the xoshiro256** generator seeded by splitmix64 and an
 exact Poisson sampler. `python reproduce.py selftest` replays the C generator in Python and checks the C
-programs edge by edge against Definition 2.1.
+programs edge by edge against Definition 2.2.

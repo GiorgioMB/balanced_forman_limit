@@ -1,15 +1,18 @@
 """Variance of the centred sum F_n on the flat torus, and of its max/min part F_n^K and of the
-symmetrised sum F_n^sym (Section S8, Table S5; Remark 7.10)."""
+symmetrised sum F_n^sym (Section 8.4, 'The variance mechanism'; Section S8, Table S5; Remark 7.10), and the
+shape of the law of F_n across graphs (Theorem 7.6)."""
 
 import zlib
 
 import numpy as np
+from scipy import stats
 
 from ..pipeline import Task, bfgraph_binned, run_tasks
 
 NAME = "variance"
 TITLE = "Variance of the centred sum of BF curvatures"
-ITEMS = ["Section S8 (variance)", "Table S5", "Remark 7.10"]
+ITEMS = ["Section 8.4 (variance mechanism)", "Section S8 (variance)", "Table S5", "Remark 7.10",
+         "Theorem 7.6 (law of F_n)"]
 REQUIRES = []
 
 N_BINS = 100
@@ -57,13 +60,33 @@ def analyse(ctx):
             boot = [values[rng.integers(0, len(values), len(values))].var(ddof=1) for _ in range(400)]
             row[key] = float(values.var(ddof=1) / norm)
             row[key + "_se"] = float(np.std(boot) / norm)
+        # Var F_n = Var F^sym + Var F^K - 2 Cov(F^sym, F^K): the covariance is what lowers Var F_n
+        row["cov_sym_K"] = float(np.cov(Fsym, FK, ddof=1)[0, 1] / (n0 * lam))
+        row["corr_sym_K"] = float(np.corrcoef(Fsym, FK)[0, 1])
+        # the law of F_n across graphs, against the normal approximation of Theorem 7.6
+        row["lam_over_sqrt_n0"] = float(lam / np.sqrt(n0))
+        row["skewness"] = float(stats.skew(F, bias=False))
+        row["excess_kurtosis"] = float(stats.kurtosis(F, bias=False))
+        row["shapiro_p"] = float(stats.shapiro(F).pvalue)
         rows.append(row)
     ctx.save_summary(NAME, rows)
     ctx.note("- Var F_n / (n lambda): " + ", ".join(f"{r['F']:.3f} (lambda={r['lam']}, n0={r['n0']})" for r in rows)
-             + " (Remark 7.10: between 0.28 and 0.35).")
+             + " (Sections 8.4 and S8: decreases from 0.36 to 0.24).")
     ctx.note("- Var F_n^K / (n lambda^2): " + ", ".join(f"{r['FK']:.2e}" for r in rows)
-             + " (Proposition 7.5: tends to sigma_2^2, about 6.7e-4).")
-    ctx.note("- Var F_n^sym / (n lambda): " + ", ".join(f"{r['Fsym']:.3f}" for r in rows) + ".")
+             + " (Section S8: between 6.9e-4 and 7.7e-4; Proposition 7.5: tends to sigma_2^2, about 6.75e-4).")
+    ctx.note("- Var F_n^sym / (n lambda): " + ", ".join(f"{r['Fsym']:.3f}" for r in rows)
+             + " (Section S8: between 0.41 and 0.44).")
+    ctx.note("- Cov(F^sym, F^K) / (n lambda): " + ", ".join(f"{r['cov_sym_K']:.3f}" for r in rows) + "; correlation "
+             + ", ".join(f"{r['corr_sym_K']:.2f}" for r in rows)
+             + " (Section S8: from about 0.03 to 0.16, correlation 0.55 to 0.70).")
+    ctx.note("- Law of F_n across graphs (Theorem 7.6): skewness " + ", ".join(f"{r['skewness']:+.2f}" for r in rows)
+             + "; excess kurtosis " + ", ".join(f"{r['excess_kurtosis']:+.2f}" for r in rows)
+             + "; Shapiro-Wilk p " + ", ".join(f"{r['shapiro_p']:.2f}" for r in rows) + ".")
+    dense = [r for r in rows if r["lam_over_sqrt_n0"] > 1]
+    if dense:
+        ctx.note("- Rows with lambda > sqrt(n0), where for d = 2 also the average is consistent: " + ", ".join(
+            f"lambda={r['lam']}, n0={r['n0']} (lambda/sqrt(n0) = {r['lam_over_sqrt_n0']:.2f}, p = {r['shapiro_p']:.2f})"
+            for r in dense) + ".")
     ctx.note(f"- Largest radius {max(r['r'] for r in rows):.3f} (must be < 1/8).")
     ctx.write_table("tableS5", "Table S5 body (F^K column in units of 1e-4)", [
         f"{r['lam']} & {r['n0']} & {r['r']:.3f} & {r['graphs']} & ${r['F']:.3f}\\pm{r['F_se']:.3f}$ & "

@@ -74,7 +74,8 @@ def analyse(ctx):
     ctx.note("- Plug-in Euler characteristic at r^2/|M| = 0.0286: " + ", ".join(
         f"{row['surface']}: {row['chi_hat']:+.3f} +- {row['chi_se']:.3f} (chi = {row['chi']})" for row in first) + ".")
     worst = max(abs(row["mean"] - row["exact"]) / row["se"] for row in rows)
-    ctx.note(f"- Sampling means within {worst:.1f} standard errors of the exact C(p,r) (paper: 1.8).")
+    ctx.note(f"- Sampling means within {worst:.1f} standard errors of the exact C(p,r) "
+             "(Section 8.4: within two standard errors).")
     names = {"bolza": "Bolza ($g=2$)", "S2": "$S^2$", "T2": "$T^2$"}
     ctx.write_table("table3", "Table 3 body", [
         f"{names[row['surface']]} & ${row['chi']:+d}$ & {row['r']:.3f} & {row['r2_over_area']:.4f} & {row['graphs']} & "

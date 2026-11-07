@@ -16,7 +16,7 @@ def omega(d):
 
 
 def f_lens(d, t):
-    """Normalised lens volume f_d(t) = I_{1-t^2/4}((d+1)/2, 1/2) (Lemma 2.2(a))."""
+    """Normalised lens volume f_d(t) = I_{1-t^2/4}((d+1)/2, 1/2) (Lemma 2.4(a))."""
     return betainc((d + 1) / 2, 0.5, 1 - np.asarray(t, float) ** 2 / 4)
 
 
@@ -104,7 +104,7 @@ def density_correction(d, t, lam_local, mu):
     return -0.5 * f * folded_mean_excess(mu, sigma)
 
 
-# ---------------------------------------------------------------- two edges sharing a vertex (Thm B.3)
+# ---------------------------------------------------------------- two edges sharing a vertex (Thm S10.3)
 def _disc_intersection_area(centres):
     """Area of the intersection of unit discs with the given centres, by quadrature in x."""
     lo = max(c[0] for c in centres) - 1.0
@@ -131,7 +131,7 @@ def _disc_intersection_area(centres):
 
 
 def pair_limit_correlation(theta_deg, tj=0.75, tk=0.75):
-    """Exact limit correlation of BF on edges {x,j}, {x,k} at angle theta (d = 2; Theorem B.3).
+    """Exact limit correlation of BF on edges {x,j}, {x,k} at angle theta (d = 2; Theorem S10.3).
 
     Each limit is a linear form in (G(L1), G(Bx), G(Bj), G(L2), G(Bk)) minus (f/2)|G(Bx) - G(B.)|;
     a linear form is uncorrelated with |any linear form| of a centred Gaussian vector, and

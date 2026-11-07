@@ -1,4 +1,4 @@
-"""Self-test: every implementation of BF curvature against a literal implementation of Definition 2.1.
+"""Self-test: every implementation of BF curvature against a literal implementation of Definition 2.2.
 
 The reference implementation below works on Python sets and follows the definition word for word; in
 particular it computes gamma_max from sq_j itself, so the tests also check identity (2.3), which the
@@ -14,7 +14,7 @@ from . import graphs, planted, theory, vertex
 from .pipeline import bfgraph_binned, bfgraph_edges, kernel_samples
 
 
-# ------------------------------------------------------------------------------- Definition 2.1
+# ------------------------------------------------------------------------------- Definition 2.2
 def bf_reference(adj, i, j):
     """Returns (BF, S, kink) of the edge {i, j}; adj maps a vertex to its set of neighbours."""
     N_i, N_j = adj[i], adj[j]
@@ -354,7 +354,7 @@ def run():
         failures += not ok
         print(f"  {'ok  ' if ok else 'FAIL'} {name}{(' (' + detail + ')') if detail else ''}", flush=True)
 
-    print("Definition 2.1 against the implementations:")
+    print("Definition 2.2 against the implementations:")
     ok, n = test_whole_graph(rng)
     report("whole graphs, bflib.graphs.bf_edges", ok, f"{n} edges")
     for geometry, (ok, n) in test_planted().items():
