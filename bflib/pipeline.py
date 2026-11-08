@@ -181,6 +181,26 @@ def bfgraph_binned(space, n0, param, rmode, seed0, n_graphs, n_bins=100):
     return np.loadtxt(proc.stdout.splitlines(), ndmin=2)
 
 
+def bfgraph_edgelist(space, n0, param, rmode, seed):
+    """The graph of bfgraph_binned with this seed, edge by edge (C program bfgraph, mode edgelist).
+    Returns a dict with the radius r, the vertex positions pos (N x 2 on T^2, N x 3 on S^2, numbered as
+    the graph's vertices), the endpoints i, j, the normalised lengths t (float32, as binned uses them)
+    and the curvatures bf of all edges."""
+    out = BUILD / f"tmp_edgelist_{os.getpid()}_{space}_{seed}.bin"
+    subprocess.run([str(native("bfgraph")), "edgelist", space, repr(float(n0)), repr(float(param)), rmode, str(seed),
+                    str(out)], check=True, capture_output=True)
+    with open(out, "rb") as fh:
+        n, n_edges, dim = (int(x) for x in np.fromfile(fh, dtype=np.int64, count=3))
+        r = float(np.fromfile(fh, dtype=np.float64, count=1)[0])
+        pos = np.fromfile(fh, dtype=np.float64, count=n * dim).reshape(n, dim)
+        i = np.fromfile(fh, dtype=np.int32, count=n_edges)
+        j = np.fromfile(fh, dtype=np.int32, count=n_edges)
+        t = np.fromfile(fh, dtype=np.float32, count=n_edges)
+        bf = np.fromfile(fh, dtype=np.float64, count=n_edges)
+    out.unlink()
+    return dict(r=r, pos=pos, i=i, j=j, t=t, bf=bf)
+
+
 def kernel_samples(lam, eps, seed0, n_samples):
     """Rows (seed, total, S, J) of the second-order kernel program."""
     proc = subprocess.run([str(native("kernel")), repr(float(lam)), repr(float(eps)), str(seed0), str(n_samples)],

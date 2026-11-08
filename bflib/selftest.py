@@ -10,8 +10,8 @@ import math
 
 import numpy as np
 
-from . import graphs, planted, theory, vertex
-from .pipeline import bfgraph_binned, bfgraph_edges, kernel_samples
+from . import conformal, graphs, lens, planted, theory, vertex
+from .pipeline import bfgraph_binned, bfgraph_edgelist, bfgraph_edges, kernel_samples
 
 
 # ------------------------------------------------------------------------------- Definition 2.2
@@ -295,6 +295,54 @@ def test_c_binned():
     return out
 
 
+def test_c_edgelist():
+    """Mode edgelist against mode binned for the same seed, and its edges against the positions it reports:
+    every pair of vertices within distance r must be an edge, with the reported normalised length."""
+    out = {}
+    for space, n0, param, rmode in [("sphere2", 260.0, 0.35, "nominal"), ("torus2", 240.0, 8.0, "nominal"),
+                                    ("torus2", 240.0, 8.0, "realised")]:
+        n_bins = 20
+        row = bfgraph_binned(space, n0, param, rmode, 11, 1, n_bins)[0]
+        g = bfgraph_edgelist(space, n0, param, rmode, 11)
+        b = np.minimum((g["t"].astype(np.float64) * n_bins).astype(np.int64), n_bins - 1)
+        c = row[3:].reshape(n_bins, 4)
+        ok = int(row[1]) == len(g["pos"]) and int(row[2]) == len(g["t"])
+        ok = ok and np.array_equal(np.bincount(b, minlength=n_bins), c[:, 0])
+        ok = ok and np.allclose(np.bincount(b, g["bf"], minlength=n_bins), c[:, 1], rtol=1e-9, atol=1e-9)
+        pos, n = g["pos"], len(g["pos"])
+        if space == "torus2":
+            diff = pos[:, None, :] - pos[None, :, :]
+            dist = np.linalg.norm(diff - np.floor(diff + 0.5), axis=2)
+        else:
+            dist = 2 * np.arcsin(np.minimum(1.0, np.linalg.norm(pos[:, None, :] - pos[None, :, :], axis=2) / 2))
+        a, bb = np.triu_indices(n, 1)
+        close = dist[a, bb] <= g["r"] * (1 + 1e-12)
+        reference = set(zip(a[close].tolist(), bb[close].tolist()))
+        reported = set(zip(np.minimum(g["i"], g["j"]).tolist(), np.maximum(g["i"], g["j"]).tolist()))
+        ok = ok and reference == reported and len(reported) == len(g["i"])
+        ok = ok and np.abs(dist[g["i"], g["j"]] / g["r"] - g["t"]).max() < 1e-6
+        out[f"{space}/{rmode}"] = (bool(ok), len(g["t"]))
+    return out
+
+
+def test_conformal():
+    """Lens and ball areas of bflib.conformal against the closed forms for the flat metric and for the round
+    sphere in stereographic coordinates (off the origin, where its geodesics are curved in the chart)."""
+    checks = {}
+    ratio, info = conformal.lens_ratio(conformal.FLAT, np.array([0.1, -0.2]), 0.7, 0.6, 0.3, nodes=48, steps=100)
+    checks["flat metric: lens ratio f_2(t), ball pi r^2"] = (
+        _close(ratio, float(theory.f_lens(2, 0.6)), 1e-12) and _close(info["ball"], math.pi * 0.09, 1e-12))
+    r, t = 0.3, 0.8
+    ratio, info = conformal.lens_ratio(conformal.ROUND_SPHERE, np.array([0.3, -0.2]), 2.1, t, r, nodes=48, steps=200)
+    checks["round sphere: lens ratio, ball 2 pi (1 - cos r)"] = (
+        _close(ratio, lens.sphere_lens(2, r, t * r) / lens.sphere_ball(2, r), 1e-10)
+        and _close(info["ball"], 2 * math.pi * (1 - math.cos(r)), 1e-10))
+    checks["test surface: K(0) = 1, grad K(0) = (-1, 0)"] = (
+        _close(float(conformal.ASYMMETRIC.curvature(np.zeros(2))), 1.0, 1e-12)
+        and np.allclose(conformal.ASYMMETRIC.curvature_gradient(np.zeros(2)), [-1.0, 0.0], atol=1e-8))
+    return checks
+
+
 def test_c_kernel():
     lam, eps, seed = 7.0, 0.3, 3
     gen = Xoshiro((1000003 * seed + 17) & MASK)
@@ -365,10 +413,14 @@ def run():
     report("C program bfgraph, per-edge mode", ok, f"{n} edges")
     for name, (ok, n) in test_c_binned().items():
         report(f"C program bfgraph, binned mode, {name}", ok, f"{n} edges")
+    for name, (ok, n) in test_c_edgelist().items():
+        report(f"C program bfgraph, edge-list mode, {name}", ok, f"{n} edges")
     ok, n = test_c_kernel()
     report("C program kernel, second difference", ok, f"{n} edges")
     print("Closed forms:")
     for name, ok in test_theory().items():
+        report(name, ok)
+    for name, ok in test_conformal().items():
         report(name, ok)
     print("all tests passed" if failures == 0 else f"{failures} test(s) FAILED")
     return failures

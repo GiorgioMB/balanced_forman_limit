@@ -14,6 +14,12 @@
        count, sum of BF, sum of kink and sum of Psi_2(t), where kink = |tri| |1/d_i - 1/d_j| / 2 is the
        max/min part, so that BF + kink is the symmetrised curvature.  (Tables 4, S5; Section 8.4.)
 
+   bfgraph edgelist space n0 param rmode seed outfile
+       The graph of mode binned with this seed, edge by edge (Section S16).  Writes int64 N, E, dim, the
+       float64 radius r, the float64 positions (N x dim) of the vertices, and then the arrays int32 i[E],
+       int32 j[E], float32 t[E] and float64 BF[E].  The vertices are numbered as in the graph, whose
+       builders relabel the points in the order of their cells: vertex a is the generated point perm[a].
+
    The 4-cycle counts use identity (2.3): for k in U_i, |N(k) n sq_j| = |N(k) n U_j|. */
 #include <math.h>
 #include <stdint.h>
@@ -155,8 +161,9 @@ static void edge_bf(const Graph *g, Scratch *s, int i, int j, double *bf, double
 
 static inline double periodic(double a) { return a - floor(a + 0.5); }
 
-/* RGG on the unit torus [0,1)^d (d = 2, 3) for points X (n x d, row major). */
-static void build_torus(Graph *g, const double *X, int n, int d, double r) {
+/* RGG on the unit torus [0,1)^d (d = 2, 3) for points X (n x d, row major).  Vertex a of the graph is the
+   point order[a]; if perm_out is not NULL it receives this permutation (to be freed by the caller). */
+static void build_torus(Graph *g, const double *X, int n, int d, double r, int **perm_out) {
     int G = (int)floor(1.0 / r);
     if (G < 3) {
         fprintf(stderr, "bfgraph: radius too large for the cell list\n");
@@ -213,12 +220,16 @@ static void build_torus(Graph *g, const double *X, int n, int d, double r) {
     }
     free(cell);
     free(start);
-    free(order);
+    if (perm_out)
+        *perm_out = order;
+    else
+        free(order);
     free(Y);
 }
 
-/* Geodesic RGG on the unit sphere S^2: chordal distance <= 2 sin(r/2). */
-static void build_sphere(Graph *g, const double *X, int n, double r) {
+/* Geodesic RGG on the unit sphere S^2: chordal distance <= 2 sin(r/2).  Vertices are relabelled as in
+   build_torus. */
+static void build_sphere(Graph *g, const double *X, int n, double r, int **perm_out) {
     double chord = 2 * sin(r / 2);
     int G = (int)floor(2.0 / chord);
     if (G < 1)
@@ -269,7 +280,10 @@ static void build_sphere(Graph *g, const double *X, int n, double r) {
     }
     free(cell);
     free(start);
-    free(order);
+    if (perm_out)
+        *perm_out = order;
+    else
+        free(order);
     free(Y);
 }
 
@@ -304,7 +318,7 @@ static int mode_edges(int argc, char **argv) {
     for (int i = 0; i < N * d; i++)
         X[i] = unif();
     Graph g;
-    build_torus(&g, X, N, d, r);
+    build_torus(&g, X, N, d, r, NULL);
     Scratch s = scratch_new(g.words);
     FILE *out = fopen(argv[6], "wb");
     if (!out) {
@@ -323,6 +337,36 @@ static int mode_edges(int argc, char **argv) {
     graph_free(&g);
     free(X);
     return 0;
+}
+
+/* The Poisson RGG of modes binned and edgelist for one seed: Poisson(n0) uniform points on the unit torus
+   (sphere = 0; param = lam) or the unit sphere (sphere = 1; param = r).  Returns the generated points in
+   *X_out (N x 2 or N x 3), their number and the radius. */
+static void poisson_graph(int sphere, double n0, double param, int realised, long seed, Graph *g, double **X_out,
+                          int *N_out, double *r_out, int **perm_out) {
+    seed_rng(1000003ULL * (uint64_t)seed + 7);
+    int N = (int)poisson(n0);
+    double *X;
+    if (sphere) {
+        X = malloc(sizeof(double) * N * 3);
+        for (int i = 0; i < N; i++) {
+            double z = 2 * unif() - 1, phi = 2 * M_PI * unif(), rho = sqrt(fmax(0.0, 1 - z * z));
+            X[3 * i] = rho * cos(phi);
+            X[3 * i + 1] = rho * sin(phi);
+            X[3 * i + 2] = z;
+        }
+        build_sphere(g, X, N, param, perm_out);
+        *r_out = param;
+    } else {
+        X = malloc(sizeof(double) * N * 2);
+        for (int i = 0; i < 2 * N; i++)
+            X[i] = unif();
+        double r = sqrt(param / (M_PI * (realised ? (double)N : n0)));
+        build_torus(g, X, N, 2, r, perm_out);
+        *r_out = r;
+    }
+    *X_out = X;
+    *N_out = N;
 }
 
 static int mode_binned(int argc, char **argv) {
@@ -345,26 +389,10 @@ static int mode_binned(int argc, char **argv) {
            *sum_psi = malloc(sizeof(double) * NB);
     for (int gi = 0; gi < n_graphs; gi++) {
         long seed = seed0 + gi;
-        seed_rng(1000003ULL * (uint64_t)seed + 7);
-        int N = (int)poisson(n0);
-        double *X;
+        int N;
+        double *X, r;
         Graph g;
-        if (sphere) {
-            X = malloc(sizeof(double) * N * 3);
-            for (int i = 0; i < N; i++) {
-                double z = 2 * unif() - 1, phi = 2 * M_PI * unif(), rho = sqrt(fmax(0.0, 1 - z * z));
-                X[3 * i] = rho * cos(phi);
-                X[3 * i + 1] = rho * sin(phi);
-                X[3 * i + 2] = z;
-            }
-            build_sphere(&g, X, N, param);
-        } else {
-            X = malloc(sizeof(double) * N * 2);
-            for (int i = 0; i < 2 * N; i++)
-                X[i] = unif();
-            double r = sqrt(param / (M_PI * (realised ? (double)N : n0)));
-            build_torus(&g, X, N, 2, r);
-        }
+        poisson_graph(sphere, n0, param, realised, seed, &g, &X, &N, &r, NULL);
         memset(count, 0, sizeof(long) * NB);
         memset(sum_bf, 0, sizeof(double) * NB);
         memset(sum_kink, 0, sizeof(double) * NB);
@@ -397,11 +425,63 @@ static int mode_binned(int argc, char **argv) {
     return 0;
 }
 
+static int mode_edgelist(int argc, char **argv) {
+    if (argc != 8) {
+        fprintf(stderr, "usage: bfgraph edgelist torus2|sphere2 n0 param nominal|realised seed outfile\n");
+        return 2;
+    }
+    int sphere = strcmp(argv[2], "sphere2") == 0;
+    if (!sphere && strcmp(argv[2], "torus2") != 0) {
+        fprintf(stderr, "bfgraph: unknown space %s\n", argv[2]);
+        return 2;
+    }
+    double n0 = atof(argv[3]), param = atof(argv[4]), r;
+    int realised = strcmp(argv[5], "realised") == 0, N, *perm;
+    long seed = atol(argv[6]);
+    double *X;
+    Graph g;
+    poisson_graph(sphere, n0, param, realised, seed, &g, &X, &N, &r, &perm);
+    int dim = sphere ? 3 : 2;
+    double *pos = malloc(sizeof(double) * ((size_t)N * dim + 1)), *bf = malloc(sizeof(double) * (g.n_edges + 1));
+    for (int a = 0; a < N; a++)
+        for (int k = 0; k < dim; k++)
+            pos[(size_t)a * dim + k] = X[(size_t)perm[a] * dim + k];
+    Scratch s = scratch_new(g.words);
+    for (long e = 0; e < g.n_edges; e++) {
+        double sq, kink;
+        edge_bf(&g, &s, g.ei[e], g.ej[e], bf + e, &sq, &kink);
+    }
+    FILE *out = fopen(argv[7], "wb");
+    if (!out) {
+        fprintf(stderr, "bfgraph: cannot open %s\n", argv[7]);
+        return 1;
+    }
+    int64_t header[3] = {N, g.n_edges, dim};
+    fwrite(header, sizeof(int64_t), 3, out);
+    fwrite(&r, sizeof(double), 1, out);
+    fwrite(pos, sizeof(double), (size_t)N * dim, out);
+    fwrite(g.ei, sizeof(int), g.n_edges, out);
+    fwrite(g.ej, sizeof(int), g.n_edges, out);
+    fwrite(g.et, sizeof(float), g.n_edges, out);
+    fwrite(bf, sizeof(double), g.n_edges, out);
+    fclose(out);
+    printf("%ld %d %ld %.17g\n", seed, N, g.n_edges, r);
+    scratch_free(&s);
+    graph_free(&g);
+    free(X);
+    free(perm);
+    free(pos);
+    free(bf);
+    return 0;
+}
+
 int main(int argc, char **argv) {
     if (argc >= 2 && strcmp(argv[1], "edges") == 0)
         return mode_edges(argc, argv);
     if (argc >= 2 && strcmp(argv[1], "binned") == 0)
         return mode_binned(argc, argv);
-    fprintf(stderr, "usage: bfgraph edges ... | bfgraph binned ...\n");
+    if (argc >= 2 && strcmp(argv[1], "edgelist") == 0)
+        return mode_edgelist(argc, argv);
+    fprintf(stderr, "usage: bfgraph edges ... | bfgraph binned ... | bfgraph edgelist ...\n");
     return 2;
 }

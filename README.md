@@ -56,11 +56,14 @@ Results are written to `results/<scale>/`:
 | Figure S4 | `python reproduce.py figS4` | `figures/fig_more.pdf` |
 | Section S8, Tables S5 and S6, Remark 7.10, the variance paragraph of Section 8.4 | `python reproduce.py S8` | `tables/tableS5.tex`, `tables/tableS6.tex` |
 | Section S9, Table S7, Proposition 5.8 | `python reproduce.py tableS7` | `tables/tableS7.tex` |
+| Section S15, Table S8, check of Lemma 7.23 | `python reproduce.py tableS8` | `tables/tableS8.tex` |
+| Section S16, Table S9, coverage of the confidence intervals of Theorem 7.14 | `python reproduce.py tableS9` | `tables/tableS9.tex` |
 
 ## Cost
 
-At paper scale the experiments take roughly 7 CPU-hours in total, most of it for the planted edges on
-curved spaces and the planted vertices (`--list` gives the cost of each part). With `--jobs N` the work is
+At paper scale the experiments take roughly 8 CPU-hours in total, most of it for the planted edges on
+curved spaces, the planted vertices and the coverage experiment of Section S16 (`--list` gives the cost of each
+part). With `--jobs N` the work is
 spread over N processes; memory use stays below 1 GB per process.
 
 ## Layout
@@ -73,11 +76,12 @@ bflib/vertex.py         local graphs around a planted vertex (Section S5)
 bflib/graphs.py         BF curvature on whole graphs, clustering, graphs on T^2, S^2 and the Bolza surface
 bflib/bolza.py          the Bolza surface (Section S1)
 bflib/lens.py           exact lens volumes and clustering probabilities by quadrature
+bflib/conformal.py      geodesic balls and lenses of a conformal metric on a surface (Section S15)
 bflib/fourcycle.py      the constants u_d, vbar_d, c_d of the 4-cycle term
 bflib/experiments/      one module per experiment; each lists the manuscript items it produces
 bflib/selftest.py       the implementations against a literal implementation of Definition 2.2
 bflib/pipeline.py       cached parallel tasks, the C programs, output helpers
-csrc/bfgraph.c          BF curvature on all edges of graphs on T^2, T^3 and S^2
+csrc/bfgraph.c          BF curvature on all edges of graphs on T^2, T^3 and S^2 (per edge, binned, or as edge lists)
 csrc/kernel.c           the second-order kernel of Section S8
 ```
 
