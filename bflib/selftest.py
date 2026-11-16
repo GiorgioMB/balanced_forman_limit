@@ -10,7 +10,7 @@ import math
 
 import numpy as np
 
-from . import conformal, graphs, lens, planted, theory, vertex
+from . import conformal, fourcycle, graphs, lens, planted, theory, vertex
 from .pipeline import bfgraph_binned, bfgraph_edgelist, bfgraph_edges, kernel_samples
 
 
@@ -343,6 +343,28 @@ def test_conformal():
     return checks
 
 
+def test_visibility():
+    """v_t of Remark 3.5 by quadrature over directions (bflib.fourcycle) against an independent formula,
+    Area(B(z,1) n B(t e_1,1)) - Area(B(z,1) n B(t e_1,1) n B(0,1)), at points of U_t near both arcs of its
+    right boundary. The points include one at t = 0.1 where quadrature without breakpoints returned 0."""
+    rng = np.random.default_rng(5)
+    worst, count = 0.0, 0
+    for t in (0.1, 0.5, 1.0):
+        ell = math.sqrt(1 - t * t / 4)
+        angles_q = [2.3683] if t == 0.1 else []
+        angles_q += list(rng.uniform(math.atan2(ell, -t / 2), math.pi, 12))
+        points = [np.array([t, 0.0]) + 1.001 * np.array([math.cos(a), math.sin(a)]) for a in angles_q]
+        points += [0.999 * np.array([math.cos(a), math.sin(a)]) for a in rng.uniform(math.atan2(ell, t / 2), math.pi, 12)]
+        for z in points:
+            if z @ z > 1 or (z - [t, 0]) @ (z - [t, 0]) <= 1:
+                continue
+            lens_area = math.pi * float(theory.f_lens(2, min(float(np.hypot(*(z - [t, 0]))), 2.0)))
+            triple = theory._disc_intersection_area([(0.0, 0.0), (t, 0.0), (float(z[0]), float(z[1]))])
+            worst = max(worst, abs(fourcycle.visibility_2d(t, z) - (lens_area - triple) / math.pi))
+            count += 1
+    return worst < 1e-9, count
+
+
 def test_c_kernel():
     lam, eps, seed = 7.0, 0.3, 3
     gen = Xoshiro((1000003 * seed + 17) & MASK)
@@ -422,5 +444,7 @@ def run():
         report(name, ok)
     for name, ok in test_conformal().items():
         report(name, ok)
+    ok, n = test_visibility()
+    report("visibility v_t of Remark 3.5 against lens minus triple intersection", ok, f"{n} points")
     print("all tests passed" if failures == 0 else f"{failures} test(s) FAILED")
     return failures
