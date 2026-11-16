@@ -187,7 +187,7 @@ def analyse(ctx):
                  "(Section 8.4: 0.0089 at r = 0.3 and 0.0040 at r = 0.2, within one standard error).")
         ctx.note(f"  Per edge: noise sd(BF(e) - Psi_2(t_e) | t_e) = {noise:.4f} over {int(E_sphere.sum()):,} edges; signal-to-noise "
                  f"ratio excess / noise = {excess / noise:.3f} (prediction / noise = {shifted / noise:.3f}), against "
-                 f"{excess / se:.1f} for the average over all edges (Section 8.4: per-edge ratio 0.03-0.05).")
+                 f"{excess / se:.1f} for the average over all edges (Section 8.4: per-edge ratio 0.02-0.05).")
 
     rng = np.random.default_rng(0)
     for lam in high["lam"]:

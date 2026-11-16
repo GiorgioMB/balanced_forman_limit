@@ -1,6 +1,6 @@
 """How much is computed: planted edges, and edges of whole graphs, whose BF curvature is computed exactly
-(Section 1: "about 10^6 planted edges and 8 x 10^8 edges of full graphs"; Sections 8.1 and S1: "up to
-2.5 x 10^6 edges per graph").
+(Section 1: "about 2 x 10^6 planted edges and 2 x 10^9 edges of full graphs"; Sections 8.1 and S1: "up to
+about 3.6 x 10^6 edges per graph").
 
 The counts are expected values computed from the designs of the experiments at the chosen scale; nothing
 is simulated. A torus graph with n points and expected degree lambda has (n - 1) lambda / 2 edges in
@@ -96,5 +96,5 @@ def analyse(ctx):
     ctx.note("- Edges of whole graphs (expected): " + "; ".join(f"{k} {v:.2e}" for k, v in graphs.items())
              + f"; total {total_graphs:.2e}, of which {without_s16:.2e} outside Section S16.")
     ctx.note(f"- Largest graph: {where}, about {largest:.2e} edges.")
-    ctx.note("  (Section 1: about 1e6 planted edges and 8e8 edges of full graphs; Sections 8.1 and S1: up to 2.5e6 edges "
-             "per graph.)")
+    ctx.note("  (Section 1: about 2e6 planted edges and 2e9 edges of full graphs; Sections 8.1 and S1: up to about 3.6e6 "
+             "edges per graph.)")

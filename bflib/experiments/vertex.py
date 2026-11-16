@@ -158,7 +158,8 @@ def analyse(ctx):
     scale = (REFERENCE_RADIUS[3] / LEGACY_RADIUS) ** 2
     ctx.note(f"  At r = {LEGACY_RADIUS}, the radius used for both dimensions by version 1.0, the d = 3 reference reads "
              f"{scale * legacy['mean']:+.2f} +- {scale * legacy['se']:.2f}, as many standard errors from 0 (at paper scale "
-             "-1.06 +- 0.41, the value in the text of Section S5).")
+             "-1.06 +- 0.41, the value in earlier versions of Section S5).")
+    ctx.note("  (Section S5: -0.17 +- 0.06 for d = 2 and -0.74 +- 0.29 for d = 3, that is -2.8 and -2.6 standard errors.)")
     rmse = sorted((s["lam_r4"], s["rmse"]) for k, s in summary.items() if k.startswith("S2_l"))
     ctx.note("- RMSE on S^2: " + ", ".join(f"{e:.1f} at lambda r^4 = {l:.0f}" for l, e in rmse) + ".")
     for key in ("ricci_S2xR_l600_r0.6", "ricci_S3_l600_r0.6", "ricci_S2_l2000_r0.5", "ricci_H2_l2000_r0.5"):
