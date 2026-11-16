@@ -43,6 +43,11 @@ def log_slice(n, lam, first):
     return np.column_stack([np.linalg.norm(disp, axis=1) / r, bf_edges(csr_from_pairs(edges, n), part)[:, 0]])
 
 
+def fixed_sizes(ctx):
+    """Planted edges per worker and lambda: (for lambda <= 50, for lambda = 200)."""
+    return (6000, 2000) if ctx.paper else (400, 100)
+
+
 def fixed_worker(worker, n_small, n_large):
     """Planted edges with t = 0.75 at fixed lambda; four independent streams 777 + worker."""
     rng = np.random.default_rng(777 + worker)
@@ -56,8 +61,7 @@ def run(ctx):
         n_edges = len(_graph(n, lam)[1])
         tasks += [Task(ctx.raw(NAME, f"rgg_n{n}_p{lam:g}_{first}.npy"), log_slice, (n, lam, first))
                   for first in range(0, n_edges, EDGE_SLICE)]
-    sizes = (6000, 2000) if ctx.paper else (400, 100)
-    tasks += [Task(ctx.raw(NAME, f"fixed_w{w}.npz"), fixed_worker, (w, *sizes)) for w in range(4)]
+    tasks += [Task(ctx.raw(NAME, f"fixed_w{w}.npz"), fixed_worker, (w, *fixed_sizes(ctx))) for w in range(4)]
     run_tasks(ctx, NAME, tasks)
 
 
