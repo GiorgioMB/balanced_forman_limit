@@ -55,13 +55,13 @@ def table1_thresholds(d):
 
 
 TABLE1_ROWS = [  # the first two columns of Table 1, and the cells as functions of the thresholds
-    (r"Uniform flat limit (\cref{thm:A}) & $\lambda_n\gg\log n$", lambda th: f"$\\alpha>{th['flat_limit']}$"),
-    (r"Curvature on one edge / all edges (\cref{thm:B}) & $\lambda_nr_n^4\to\infty$ / $\gg\log n$",
+    (r"Uniform flat limit (\cref{thm:A}(i)) & $\lambda_n\gg\log n$", lambda th: f"$\\alpha>{th['flat_limit']}$"),
+    (r"Curvature on one edge / all edges (\cref{cor:B}) & $\lambda_nr_n^4\to\infty$ / $\gg\log n$",
      lambda th: f"$\\alpha>{th['single_edge']}$"),
-    (r"BF average consistent (\cref{thm:C,thm:D}) & $\sqrt n\,r_n^2\to\infty$",
+    (r"BF average consistent (\cref{thm:C,cor:D}) & $\sqrt n\,r_n^2\to\infty$",
      lambda th: f"$\\alpha>{th['bf_average']}$"),
     (r"Normal approximation (\cref{thm:D}) & $\lambda_nr_n^6\to0$", lambda th: f"$\\alpha<{th['normal_approximation']}$"),
-    (r"Confidence intervals (\cref{thm:ci}) & $\lambda_n\gg\sqrt n$, $\sqrt{n\lambda_n}\,r_n^6\to0$",
+    (r"Confidence intervals (\cref{thm:E}) & $\lambda_n\gg\sqrt n$, $\sqrt{n\lambda_n}\,r_n^6\to0$",
      lambda th: f"${th['ci_lower']}<\\alpha<{th['ci_upper']}$"),
     (r"Smooth statistic, average (\cref{thm:smooth-global}) & $n\lambda_nr_n^4\to\infty$",
      lambda th: f"$\\alpha>{th['smooth_average']}$"),
