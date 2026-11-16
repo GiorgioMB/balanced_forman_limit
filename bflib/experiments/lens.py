@@ -63,7 +63,13 @@ def analyse(ctx):
                 for g in GEOMETRIES for t in T_TABLE)
     ctx.note(f"- Lens expansion: at r = 0.05 the normalised deviation matches kappa_d(t) rho to relative error "
              f"{worst:.1e} in all 20 cases.")
+    # errors of order r^2: halving r divides the error by about 4
+    ratios = [(values[g][f"table_{t}"][i] - values[g][f"pred_{t}"]) / (values[g][f"table_{t}"][i + 1] - values[g][f"pred_{t}"])
+              for g in GEOMETRIES for t in T_TABLE for i in range(len(R_TABLE) - 1)]
+    ctx.note(f"- Errors of order r^2: halving r divides the error by {min(ratios):.2f} to {max(ratios):.2f} (4 for order r^2).")
+    paper = {"S2": (0.034462, 0.034458), "H2": (-0.034454, -0.034458), "S3": (0.063291, 0.063281)}
     for surface, d, scal in [("S2", 2, 2.0), ("H2", 2, -2.0), ("S3", 3, 6.0)]:
         dev = (clustering[f"corollary_{surface}_0.05"] - flat_clustering(d)) / 0.05**2
         pred = 3 * float(kappa(d, 1.0)) / (d + 2) * scal
-        ctx.note(f"- Corollary 5.2 on {surface}: (C(p,r) - 3f_d(1)/2)/r^2 = {dev:.6f} at r = 0.05, prediction {pred:.6f}.")
+        ctx.note(f"- Corollary 5.2 on {surface}: (C(p,r) - 3f_d(1)/2)/r^2 = {dev:.6f} at r = 0.05, prediction {pred:.6f} "
+                 f"(Section S4: {paper[surface][0]:.6f} and {paper[surface][1]:.6f}).")

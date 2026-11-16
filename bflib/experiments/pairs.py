@@ -2,6 +2,7 @@
 Figure S4(c))."""
 
 import numpy as np
+from scipy.optimize import brentq
 
 from ..pipeline import Task, run_tasks
 from ..planted import pair_trial
@@ -47,5 +48,8 @@ def analyse(ctx):
     z = [(r["corr"] - r["limit"]) / r["se"] for r in rows]
     ctx.note("- Correlations " + ", ".join(f"{r['corr']:+.3f}" for r in rows) + f" for angles {ANGLES} degrees; "
              f"standardised differences from the exact limit in [{min(z):.1f}, {max(z):.1f}].")
+    zero = brentq(lambda a: pair_limit_correlation(a, T, T), 90, 150, xtol=1e-6)
+    ctx.note(f"- The limit correlation decreases from {rows[0]['limit']:+.2f} to {rows[-1]['limit']:+.2f} and is negative for "
+             f"angles above {zero:.1f} degrees (Section S7: 0.90 to -0.33, negative for theta >~ 110 degrees).")
     ctx.write_table("tableS4", "Table S4 body", [
         f"{r['theta']} & {r['pairs']} & ${r['corr']:+.3f}\\pm{r['se']:.3f}$ & ${r['limit']:+.3f}$ \\\\" for r in rows])

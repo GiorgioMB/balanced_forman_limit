@@ -6,7 +6,9 @@ symmetric under x_2 -> -x_2. For x = 0, y_v = exp_x(t r v) and the lens ratio R(
 computed exactly by bflib.conformal, Proposition 5.1 gives R(v) = f_2(t) + kappa_2(t) rho r^2 + O(r^3) with
 rho = 3K(0)/2, and Lemma 7.23 says that the antipodal average (R(v) + R(-v))/2 equals f_2(t) + kappa_2(t) rho r^2 up to
 O(r^4 + r^5/t), and that Vol(B(y_v,r)) + Vol(B(y_-v,r)) - 2 Vol(B(x,r)) = O(r^6). The terms of each order in r are
-alternately even and odd in v, so all four normalised quantities below converge at rate r^2.
+alternately even and odd in v, so all four normalised quantities below converge at rate r^2. From
+Vol(B(y,r)) = pi r^2 (1 - K(y) r^2/12 + O(r^4)), the two ball quantities converge to -t d_v K(x)/12 and
+-t^2 d_vv K(x)/12; here grad^2 K(0) is the identity, so the limits are t/12 and -t^2/12 along e_1.
 
 The heuristic for the odd part evaluates the lens volume at the curvature of the midpoint of the edge: with
 Vol(L) = pi r^2 (f + (3 kappa/2 - f/12) K r^2) on a surface of constant curvature K and
@@ -89,6 +91,8 @@ def analyse(ctx):
     K0 = float(metric.curvature(np.zeros(2)))
     gradK = metric.curvature_gradient(np.zeros(2))
     rho = 1.5 * K0  # Ric(v,v) + Scal/(d+2) = K + 2K/4 on a surface
+    second = {"e1": metric.curvature_second_derivative(np.zeros(2), [1.0, 0.0]),
+              "e2": metric.curvature_second_derivative(np.zeros(2), [0.0, 1.0])}
     rows = []
     for t in T_VALUES:
         f, k = float(f_lens(2, t)), float(kappa(2, t))
@@ -105,7 +109,8 @@ def analyse(ctx):
             entry[axis] = dict(d_v_K=float(dK), odd=odd, odd_limit=_richardson(odd),
                                odd_heuristic=(1.5 * k - f / 12) * (t / 2) * dK, even=even, even_limit=_richardson(even),
                                ball_odd=ball_odd, ball_odd_limit=_richardson(ball_odd), ball_odd_prediction=-t * dK / 12,
-                               ball_even=ball_even, ball_even_limit=_richardson(ball_even))
+                               ball_even=ball_even, ball_even_limit=_richardson(ball_even),
+                               ball_even_prediction=-t * t * second[axis] / 12)
         rows.append(entry)
     fine = _load(ctx, "accuracy_r0.4_t1.0.json")
     base = _load(ctx, "conf_r0.4_t1.0.json")
@@ -127,7 +132,16 @@ def analyse(ctx):
         ctx.note(f"  v = e_2: odd part at most {max(abs(x) for x in e2['odd']):.1e} (symmetry x_2 -> -x_2); "
                  f"remainder / r^4 limit {e2['even_limit']:+.4e}. Balls along e_1: odd part / (pi r^5) limit "
                  f"{e1['ball_odd_limit']:+.5f} (prediction -t d_v K/12 = {e1['ball_odd_prediction']:+.5f}); "
-                 f"(Vol B(y_+) + Vol B(y_-) - 2 Vol B(x)) / (pi r^6) = " + ", ".join(f"{x:+.4f}" for x in e1["ball_even"]) + ".")
+                 f"(Vol B(y_+) + Vol B(y_-) - 2 Vol B(x)) / (pi r^6) = " + ", ".join(f"{x:+.4f}" for x in e1["ball_even"])
+                 + f", limit {e1['ball_even_limit']:+.5f} (prediction -t^2 d_vv K/12 = {e1['ball_even_prediction']:+.5f}).")
+    odd = [row["e1"]["odd_limit"] for row in rows]
+    rem = [row[axis]["even_limit"] for row in rows for axis in ("e1", "e2")]
+    heuristic = max(abs(row["e1"]["odd_limit"] / row["e1"]["odd_heuristic"] - 1) for row in rows)
+    same = max(abs(row["e1"]["even_limit"] - row["e2"]["even_limit"]) for row in rows)
+    ctx.note(f"- Summary: odd-part coefficients between {min(odd):+.2e} and {max(odd):+.2e} (Section S15: -0.94e-3 and 8.3e-3); "
+             f"odd part for v = e_2 at most {max(abs(x) for row in rows for x in row['e2']['odd']):.0e} (5e-13); "
+             f"remainder / r^4 limits between {min(rem):.2e} and {max(rem):.2e} (1.9e-3 and 6.2e-3), equal for e_1 and e_2 "
+             f"to {same:.0e}; extrapolated odd parts against the midpoint heuristic within {heuristic:.0e} relative (3e-5).")
     acc = design(ctx)[2]
     ctx.note(f"- Finer discretisation ({int(1.5 * acc['nodes'])} nodes, {2 * acc['steps']} steps) at r = 0.4, t = 1 "
              f"changes the volumes by at most "

@@ -74,6 +74,12 @@ def analyse(ctx):
              f"{len(ratios)} configurations, mean {np.mean(ratios):.2f} (paper: [0.92, 1.11], 64, mean 0.99).")
     ctx.note(f"- Bias: {len(z)} standardised discrepancies for lambda >= 400, mean {np.mean(z):.2f}, "
              f"sd {np.std(z, ddof=1):.2f} (paper: 48, mean 0.12, sd 1.01).")
+    constants = ctx.load_summary("fourcycle")["constants"]
+    top = max(lams)
+    below = [1 - next(r["lam_ES"] for r in summary[f"{d}_{t}"]["rows"] if r["lam"] == top) / constants[f"{d}_{t}"]["c"]
+             for d in (2, 3) for t in T_VALUES]
+    ctx.note(f"- 4-cycle term: at lambda = {top}, lambda E S is {100 * min(below):.0f}% to {100 * max(below):.0f}% below "
+             "c_d(t) (Section 8.2: 3-10% at lambda = 12800).")
     _figures(ctx, summary, lams)
     write_table_s1(ctx)
 

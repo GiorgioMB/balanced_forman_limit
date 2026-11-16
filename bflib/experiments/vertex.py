@@ -15,6 +15,13 @@ ITEMS = ["Section S5", "Figure S3"]
 REQUIRES = []
 
 T_MIN, MAX_EDGES = 0.5, 200
+# The flat references are simulated at unit radius. BF on a flat space does not depend on r, but Scal_hat
+# divides by r^2, so a flat reference measures the residual bias of the cubic fit in the units of the curved
+# runs that it centres only when it is expressed at their radius: r = 0.5 for d = 2 (S^2 and H^2 at
+# lambda = 2000) and r = 0.6 for d = 3 (S^3 and S^2 x R at lambda = 600). Version 1.0 used r = 0.5 for both,
+# which made the d = 3 value (0.6/0.5)^2 = 1.44 times too large; the report also gives that value.
+REFERENCE_RADIUS = {2: 0.5, 3: 0.6}
+LEGACY_RADIUS = 0.5
 # (geometry, lambda, r, true Scal, flat reference)
 CONFIGS = [
     ("flat2", 2000, 1.0, 0, "flat2_l2000_r1.0"), ("S2", 2000, 0.5, 2, "flat2_l2000_r1.0"),
@@ -127,7 +134,8 @@ def analyse(ctx):
         if name == ref:  # flat reference: cross-fit the bias curve on even vertices, evaluate on odd ones
             even = data[name]["vid"] % 2 == 0
             fits[ref] = bias_fit(data[name], d)
-            estimates = scal_hat({k: v[~even] for k, v in data[name].items()}, d, 0.5, bias_fit(data[name], d, even))
+            estimates = scal_hat({k: v[~even] for k, v in data[name].items()}, d, REFERENCE_RADIUS[d],
+                                 bias_fit(data[name], d, even))
         else:
             estimates = scal_hat(data[name], d, r, fits[ref])
         summary[name] = dict(d=d, lam=lam, r=r, true=scal, vertices=len(estimates), mean=float(estimates.mean()),
@@ -143,7 +151,14 @@ def analyse(ctx):
     for key in ("S2_l2000_r0.5", "H2_l2000_r0.5", "S3_l600_r0.6", "S2xR_l600_r0.6", "flat2_l2000_r1.0", "flat3_l600_r1.0"):
         s = summary[key]
         ctx.note(f"- {key}: mean Scal_hat {s['mean']:+.2f} +- {s['se']:.2f} (true {s['true']}), per-vertex sd {s['sd']:.2f}, "
-                 f"{s['vertices']} vertices, lambda r^4 = {s['lam_r4']:.0f}.")
+                 f"{s['vertices']} vertices, lambda r^4 = {s['lam_r4']:.0f}"
+                 + (f"; {s['mean'] / s['se']:+.1f} standard errors, at r = {REFERENCE_RADIUS[s['d']]}, the radius of the "
+                    f"d = {s['d']} curved runs" if s["true"] == 0 else "") + ".")
+    legacy = summary["flat3_l600_r1.0"]
+    scale = (REFERENCE_RADIUS[3] / LEGACY_RADIUS) ** 2
+    ctx.note(f"  At r = {LEGACY_RADIUS}, the radius used for both dimensions by version 1.0, the d = 3 reference reads "
+             f"{scale * legacy['mean']:+.2f} +- {scale * legacy['se']:.2f}, as many standard errors from 0 (at paper scale "
+             "-1.06 +- 0.41, the value in the text of Section S5).")
     rmse = sorted((s["lam_r4"], s["rmse"]) for k, s in summary.items() if k.startswith("S2_l"))
     ctx.note("- RMSE on S^2: " + ", ".join(f"{e:.1f} at lambda r^4 = {l:.0f}" for l, e in rmse) + ".")
     for key in ("ricci_S2xR_l600_r0.6", "ricci_S3_l600_r0.6", "ricci_S2_l2000_r0.5", "ricci_H2_l2000_r0.5"):

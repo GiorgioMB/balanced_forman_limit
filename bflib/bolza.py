@@ -49,6 +49,21 @@ def group_elements(r, word_length=4):
     return tuple(m for m in seen if _distance_from_origin(m) <= max_dist)
 
 
+def octagon_vertices():
+    """The eight vertices of the octagon, at distance R from its centre, in the hyperboloid model."""
+    angles = (np.arange(8) + 0.5) * np.pi / 4
+    return np.column_stack([np.full(8, np.cosh(R_CIRC)), np.sinh(R_CIRC) * np.cos(angles), np.sinh(R_CIRC) * np.sin(angles)])
+
+
+def tile_census(r):
+    """Section S1: the number of deck transformations used for radius r (those with d(o, g o) <= 2R + r),
+    and how many of their tiles share a vertex with the octagon (the octagon, its 8 edge-neighbours and its
+    40 vertex-neighbours: 8 octagons meet at every vertex, as the angles are pi/4)."""
+    group, vertices = group_elements(round(float(r), 12)), octagon_vertices()
+    touching = sum(any(np.allclose(g @ v, w, atol=1e-8) for v in vertices for w in vertices) for g in group)
+    return dict(elements=len(group), touching=int(touching), injectivity_radius=float(A_HALF))
+
+
 def in_octagon(points):
     """Hyperboloid points inside the regular octagon (Klein model; vertices at angles (k+1/2) pi/4)."""
     klein = points[:, 1:] / points[:, :1]

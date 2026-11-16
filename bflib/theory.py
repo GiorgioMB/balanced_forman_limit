@@ -64,6 +64,13 @@ def a_d(d):
     return mean_over_T(d, lambda t: float(f_lens(d, t)) * np.sqrt((1 - float(f_lens(d, t))) / np.pi))
 
 
+def mean_flat_offset(d, lam, c_mean):
+    """E[m_lambda(T) - Psi_d(T)] to order 1/lambda, from Proposition 3.3:
+    -a_d lambda^{-1/2} + (4 - 3 E f_d(T) + E c_d(T)) / lambda, with E f_d(T) = 3 f_d(1)/2 (Lemma S11.1) and
+    c_mean = E c_d(T) (for d = 2, c_2 = 4: Remark 3.5)."""
+    return -a_d(d) / np.sqrt(lam) + (4 - 4.5 * float(f_lens(d, 1.0)) + c_mean) / lam
+
+
 def vartheta_d(d):
     """vartheta_d = 6(d+1)/(d(d+2)) E kappa_d(T) (eq. (7.1))."""
     return 6 * (d + 1) / (d * (d + 2)) * mean_over_T(d, lambda t: float(kappa(d, t)))

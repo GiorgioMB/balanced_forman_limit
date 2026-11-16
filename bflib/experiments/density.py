@@ -81,6 +81,15 @@ def analyse(ctx):
         ctx.note(f"- r = {row['r']}, t = {row['t']}: centred mean {row['bf']:+.5f} +- {row['bf_se']:.5f}, prediction "
                  f"{row['prediction']:+.5f} (relative deviation {100 * row['relative_deviation']:+.0f}%); BF^sym "
                  f"{row['bf_sym']:+.5f} +- {row['bf_sym_se']:.5f}.")
+    for r in RADII:
+        sub = [row for row in rows if row["r"] == r]
+        ctx.note(f"- r = {r}: simulated means within {100 * max(abs(row['relative_deviation']) for row in sub):.1f}% of the "
+                 "prediction; deviations " + ", ".join(f"{row['bf'] - row['prediction']:+.4f}" for row in sub)
+                 + f" (remainder O(r^2) = {r * r:.0e}, O(1/lambda) = {1 / LAM:.0e}); |BF^sym| at most "
+                 f"{max(abs(row['bf_sym']) for row in sub):.4f}, |BF| between {min(abs(row['bf']) for row in sub):.4f} and "
+                 f"{max(abs(row['bf']) for row in sub):.4f}.")
+    ctx.note("  (Section S9: within 5% at r = 0.02 and 15% at r = 0.04, deviations 0.0001-0.0004 and 0.0021-0.0029; at "
+             "r = 0.01 deviations +0.0009 and -0.0002; |BF^sym| at most 0.0043 against 0.016-0.017 for BF at r = 0.04.)")
     ctx.write_table("tableS7", "Table S7 body", [
         f"{row['r']:.2f} & {row['lam']} & {row['t']:.2f} & ${row['bf']:+.5f}\\pm{row['bf_se']:.5f}$ & "
         f"${row['prediction']:+.5f}$ & ${row['bf_sym']:+.5f}\\pm{row['bf_sym_se']:.5f}$\\\\" for row in rows])

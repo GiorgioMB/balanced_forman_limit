@@ -16,7 +16,9 @@ within r/2 of its centre, this contains every cell at distance at most 4r.
 For each graph the cell sums X_a of (7.3) give sigmahat_n^2 = sum_a X_a sum_{b in N(a)} X_b, and the
 cell-centred variant uses X_a - Fbar_n E_a instead, where E_a is half the number of edge ends in Q_a, so
 that the centred sums add up to zero. Intervals: Fbar_n +- z sd for the oracle (sd the standard deviation
-of Fbar_n over the graphs of a row), and Fbar_n +- z sigmahat_n / |E| for the studentised forms.
+of Fbar_n over the graphs of a row), and Fbar_n +- z sigmahat_n / |E| for the studentised forms. The
+cell-centred intervals are compared with the coverage of the same normal-quantile interval for a Student
+variable with N/Dbar - 1 degrees of freedom, N the number of cells and Dbar the mean size of N(a).
 """
 
 import zlib
@@ -25,6 +27,7 @@ import numpy as np
 from scipy.sparse import csr_matrix, identity
 from scipy.spatial import SphericalVoronoi, cKDTree
 from scipy.stats import norm
+from scipy.stats import t as student
 
 from ..pipeline import Task, bfgraph_binned, bfgraph_edgelist, run_tasks
 
@@ -263,6 +266,14 @@ def analyse(ctx):
             row[f"student_{key}"] = _coverage(dev, z * np.sqrt(np.where(sig2 > 0, sig2, np.nan)) / E)
             row[f"centred_{key}"] = _coverage(dev, z * np.sqrt(np.where(sig2c > 0, sig2c, np.nan)) / E)
         row["coverage_se_95"] = float(np.sqrt(0.95 * 0.05 / len(bar)))
+        # a Student variable with N/Dbar - 1 degrees of freedom, studentised with the normal quantile
+        df = row["blocks_over_neighbourhood"] - 1
+        for level in LEVELS:
+            z = norm.ppf(0.5 + level / 2)
+            row[f"student_t_{round(100 * level)}"] = float(2 * student.cdf(z, df) - 1) if df > 0 else float("nan")
+        # Monte Carlo error of E sigmahat^2 / Var F_n, dominated by that of Var F_n over the graphs
+        row["var_relative_error"] = float(np.sqrt(2 / (len(bar) - 1)))
+        row["sigma_hat2_mc_errors"] = float((row["sigma_hat2_over_varF"] - 1) / row["var_relative_error"])
         out["rows"].append(row)
     ctx.save_summary(NAME, out)
 
@@ -287,6 +298,13 @@ def analyse(ctx):
                  f"95% coverage {row['coverage_se_95']:.3f}.")
         ctx.note(f"  correlation of F_n^2 with sigmahat^2 {row['corr_F2_sigma_hat2']:+.2f}, with the centred estimator "
                  f"{row['corr_F2_centred_sigma_hat2']:+.2f}.")
+        ctx.note(f"  E sigmahat^2 / Var F_n is {row['sigma_hat2_mc_errors']:+.1f} Monte Carlo errors from 1 (relative error "
+                 f"sqrt(2/(graphs - 1)) = {row['var_relative_error']:.2f}); a Student variable with N/Dbar - 1 = "
+                 f"{row['blocks_over_neighbourhood'] - 1:.1f} degrees of freedom would give the cell-centred intervals "
+                 f"{row['student_t_90']:.3f} / {row['student_t_95']:.3f}.")
+    ctx.note("  (Section S16: on T^2 the cell-centred intervals cover close to the 92.2% and 94.4% of a Student interval "
+             "with N/Dbar - 1 degrees of freedom; on S^2 at lambda = 50, E sigmahat^2 / Var F_n is within 1.3 Monte Carlo "
+             "errors of 1, a variance from 200 graphs having relative error 0.10.)")
     names = {"torus2": "$\\T^2$", "sphere2": "$S^2$"}
     ctx.write_table("tableS9", "Table S9 body (90% coverages are in the report)", [
         f"{names[row['space']]} & {row['lam']} & {row['n0']:,} & {row['lam_over_sqrt_n0']:.2f} & "

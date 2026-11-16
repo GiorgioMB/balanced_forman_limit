@@ -5,6 +5,7 @@ import zlib
 
 import numpy as np
 
+from ..bolza import tile_census
 from ..graphs import AREA, EULER, mean_local_clustering, sample_surface, surface_edges
 from ..lens import flat_clustering
 from ..pipeline import Task, run_tasks
@@ -76,6 +77,11 @@ def analyse(ctx):
     worst = max(abs(row["mean"] - row["exact"]) / row["se"] for row in rows)
     ctx.note(f"- Sampling means within {worst:.1f} standard errors of the exact C(p,r) "
              "(Section 8.4: within two standard errors).")
+    for r in sorted({r for surface, r, _ in design(ctx) if surface == "bolza"}):
+        census = tile_census(r)
+        ctx.note(f"- Bolza surface, r = {r}: {census['elements']} deck transformations with d(o, g o) <= 2R + r, of which "
+                 f"{census['touching']} have tiles sharing a vertex with the octagon; injectivity radius "
+                 f"{census['injectivity_radius']:.4f} (Section S1: 65 and 49; a = 1.53).")
     names = {"bolza": "Bolza ($g=2$)", "S2": "$S^2$", "T2": "$T^2$"}
     ctx.write_table("table3", "Table 3 body", [
         f"{names[row['surface']]} & ${row['chi']:+d}$ & {row['r']:.3f} & {row['r2_over_area']:.4f} & {row['graphs']} & "

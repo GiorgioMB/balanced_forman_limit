@@ -39,6 +39,13 @@ class ConformalMetric:
         return out
 
 
+    def curvature_second_derivative(self, x, v, h=1e-3):
+        """d^2/ds^2 K(x + s v) at s = 0 by central differences of order 4 (for the predictions only)."""
+        x, v = np.asarray(x, float), np.asarray(v, float)
+        k = lambda s: float(self.curvature(x + s * v))
+        return (-k(2 * h) + 16 * k(h) - 30 * k(0.0) + 16 * k(-h) - k(-2 * h)) / (12 * h * h)
+
+
 def _diag(values):
     """Stack of 2 x 2 diagonal matrices from an array (..., 2) of diagonal entries."""
     out = np.zeros(values.shape[:-1] + (2, 2))

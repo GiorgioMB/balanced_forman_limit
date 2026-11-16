@@ -91,6 +91,12 @@ def analyse(ctx):
              "reference (paper: 19.6 to 22.2).")
     offsets = [abs(r["offset"]) for r in rows if r["geometry"].startswith("flat")]
     ctx.note(f"- Flat references differ from Psi_d(t) by up to {max(offsets):.1e} (paper: 2.2e-3).")
+    flat_offset = {(int(r["geometry"][-1]), r["t"]): r["offset"] for r in rows if r["geometry"].startswith("flat")}
+    sphere = {r["t"]: r["diff"] for r in curved if r["geometry"] == "S2"}
+    ctx.note("- Flat offset m_lambda - Psi_d: d = 2 " + ", ".join(f"{flat_offset[(2, t)]:+.1e}" for t in T_VALUES)
+             + "; d = 3 " + ", ".join(f"{flat_offset[(3, t)]:+.1e}" for t in T_VALUES) + f" (t = {T_VALUES}); for d = 2 it is "
+             + ", ".join(f"{100 * abs(flat_offset[(2, t)] / sphere[t]):.0f}%" for t in T_VALUES)
+             + " of the S^2 signal (Section 8.3: below Psi_d for d = 2, above for d = 3 at larger t; about 10% of the S^2 signal).")
 
     labels = {"S2": "$S^2$", "H2": "$H^2$", "S3": "$S^3$", "S2xR_S": r"$S^2\!\times\!\R$, $v\in TS^2$",
               "S2xR_R": r"$S^2\!\times\!\R$, $v\in T\R$"}

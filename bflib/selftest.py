@@ -10,7 +10,7 @@ import math
 
 import numpy as np
 
-from . import conformal, fourcycle, graphs, lens, planted, theory, vertex
+from . import bolza, conformal, fourcycle, graphs, lens, planted, theory, vertex
 from .pipeline import bfgraph_binned, bfgraph_edgelist, bfgraph_edges, kernel_samples
 
 
@@ -365,6 +365,12 @@ def test_visibility():
     return worst < 1e-9, count
 
 
+def test_bolza():
+    """Section S1: 65 deck transformations for r = 0.6, 49 of whose tiles share a vertex with the octagon."""
+    census = bolza.tile_census(0.6)
+    return census["elements"] == 65 and census["touching"] == 49 and 0.6 < census["injectivity_radius"]
+
+
 def test_c_kernel():
     lam, eps, seed = 7.0, 0.3, 3
     gen = Xoshiro((1000003 * seed + 17) & MASK)
@@ -446,5 +452,6 @@ def run():
         report(name, ok)
     ok, n = test_visibility()
     report("visibility v_t of Remark 3.5 against lens minus triple intersection", ok, f"{n} points")
+    report("Bolza surface: 65 deck transformations for r = 0.6, 49 tiles touching the octagon", test_bolza())
     print("all tests passed" if failures == 0 else f"{failures} test(s) FAILED")
     return failures
