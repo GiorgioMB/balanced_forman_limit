@@ -47,7 +47,7 @@ Results are written to `results/<scale>/`:
 | Section 8.3, Table 2, Figure 3 | `python reproduce.py table2` | `tables/table2.tex`, `figures/fig_curved.pdf` |
 | Section 8.4, Table 3 (mean clustering) | `python reproduce.py table3` | `tables/table3.tex` |
 | Section 8.4, global BF averages and Table 4 | `python reproduce.py table4` | `tables/table4.tex` |
-| Section S2, Table S1, Figure S1, Remark 3.5 | `python reproduce.py tableS1` | `tables/tableS1.tex`, `figures/fig_sq.pdf` |
+| Section S2, Table S1, Figure S1, Remark 3.5 (profile of v_t for t from 0.1 to 1) | `python reproduce.py tableS1` | `tables/tableS1.tex`, `figures/fig_sq.pdf` |
 | Section S3, Table S2, Figure S2 | `python reproduce.py tableS2` | `tables/tableS2.tex`, `figures/fig_global.pdf` |
 | Section S4, Table S3, check of Corollary 5.2 | `python reproduce.py tableS3` | `tables/tableS3.tex` |
 | Section S5, Figure S3 | `python reproduce.py figS3` | `figures/fig_e1.pdf` |
@@ -58,6 +58,7 @@ Results are written to `results/<scale>/`:
 | Section S9, Table S7, Proposition 5.8 | `python reproduce.py tableS7` | `tables/tableS7.tex` |
 | Section S15, Table S8, check of Lemma 7.23 | `python reproduce.py tableS8` | `tables/tableS8.tex` |
 | Section S16, Table S9, coverage of the confidence intervals of Theorem 7.14 | `python reproduce.py tableS9` | `tables/tableS9.tex` |
+| Sections 1, 8.1 and S1: how many planted edges and edges of whole graphs are computed | `python reproduce.py census` | `REPORT.md` |
 
 ## Cost
 
@@ -90,4 +91,5 @@ csrc/kernel.c           the second-order kernel of Section S8
 Every task has a fixed seed, so a run regenerates the same numbers. The planted-edge samplers draw their
 random numbers in a fixed order; the C programs use the xoshiro256** generator seeded by splitmix64 and an
 exact Poisson sampler. `python reproduce.py selftest` replays the C generator in Python and checks the C
-programs edge by edge against Definition 2.2.
+programs edge by edge against Definition 2.2; it also checks the quadrature of Remark 3.5 against an
+independent formula, the closed forms of the paper and the group of the Bolza surface (Section S1).

@@ -3,3 +3,4 @@ __pycache__/
 build/
 results/
 .venv/
+.DS_Store

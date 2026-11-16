@@ -12,7 +12,7 @@
        space = sphere2: unit sphere S^2 with geodesic radius r = param (rmode ignored).
        For each graph prints one line: seed N E, then for each of nbins bins of t in (0,1]:
        count, sum of BF, sum of kink and sum of Psi_2(t), where kink = |tri| |1/d_i - 1/d_j| / 2 is the
-       max/min part, so that BF + kink is the symmetrised curvature.  (Tables 4, S5; Section 8.4.)
+       max/min part, so that BF + kink is the symmetrised curvature.  (Tables 4, S5, S9; Sections 8.4, S8, S16.)
 
    bfgraph edgelist space n0 param rmode seed outfile
        The graph of mode binned with this seed, edge by edge (Section S16).  Writes int64 N, E, dim, the
